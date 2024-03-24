@@ -5,7 +5,7 @@ import * as authController from './auth.controller.js'
 import * as authValidator from './auth.validation.js'
 import { validation } from '../../middleware/validation.js'
 import auth from '../../middleware/auth.js'
-import captchaCheck from '../../middleware/captchaCheck.js'
+// import captchaCheck from '../../middleware/captchaCheck.middleware.js'
 import { login2FA } from '../../middleware/2fa.middleware.js'
 
 
@@ -13,7 +13,7 @@ const router = Router()
 
 router.post(
    '/signup',
-   captchaCheck,
+   //captchaCheck,
    fileUpload('profilePic', fileValidation.image).single('image'),
    validation(authValidator.signUpSchema),
    authController.signUp
@@ -40,15 +40,15 @@ router.get('/confirmChangeEmail/:token', authController.confirmChangeEmail)
 
 router.post(
    '/signin',
-   captchaCheck,
    validation(authValidator.signInSchema),
    login2FA,
+   // captchaCheck,
    authController.signIn
 )
 
 router.post(
    '/sendcode',
-   captchaCheck,
+   //captchaCheck,
    validation(authValidator.sendVerificationCodeSchema),
    authController.sendVerificationCode
 )
