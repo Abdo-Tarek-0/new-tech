@@ -6,7 +6,7 @@ import * as authValidator from './auth.validation.js'
 import { validation } from '../../middleware/validation.js'
 import auth from '../../middleware/auth.js'
 // import captchaCheck from '../../middleware/captchaCheck.middleware.js'
-import { login2FA } from '../../middleware/2fa.middleware.js'
+import { login2FA, verify2FA } from '../../middleware/2fa.middleware.js'
 
 
 const router = Router()
@@ -32,6 +32,7 @@ router.get(
 router.post(
    '/requestChangeEmail',
    auth('user', 'admin', 'tech'),
+   verify2FA('must'),
    validation(authValidator.requestChangeEmailSchema),
    authController.requestChangeEmail
 )
@@ -62,6 +63,7 @@ router.post(
 router.patch(
    '/changepassword',
    auth('user', 'admin', 'tech'),
+   verify2FA('must'),
    validation(authValidator.changePasswordSchema),
    authController.changePassword
 )
