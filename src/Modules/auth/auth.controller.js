@@ -11,6 +11,7 @@ import {
 } from '../../utils/GenerateAndVerifyToken.js'
 import TwoFactorAuthServices from '../../services/2FA.services.js'
 import mongoose from 'mongoose'
+import captchaCheck from '../../utils/captchaCheck.util.js'
 
 export const signUp = catchError(async (req, res) => {
    const { email } = req.body
@@ -26,6 +27,8 @@ export const signUp = catchError(async (req, res) => {
       throw new ErrorMessage(404, 'No User Added Check Your Data 🙄')
    }
 
+   if (!(await captchaCheck(req.body.cfTurnstileToken)))
+      throw new ErrorMessage(400, 'Invalid Captcha')
    const token = generateToken({
       payload: {
          reason: 'CONFIRM_EMAIL',
@@ -350,12 +353,15 @@ export const confirmChangeEmail = async (req, res) => {
       )
          throw new ErrorMessage(400, 'Token is invalid or expired')
 
-      const userTask =  UserModel.findById(tokenData?.user)
-      const isEmailExistTask =  UserModel.findOne({
+      const userTask = UserModel.findById(tokenData?.user)
+      const isEmailExistTask = UserModel.findOne({
          email: tokenData.newEmail,
       })
 
-      const [user, isEmailExist] = await Promise.all([userTask, isEmailExistTask])
+      const [user, isEmailExist] = await Promise.all([
+         userTask,
+         isEmailExistTask,
+      ])
 
       if (!user) throw new ErrorMessage(400, 'User Not Found')
       if (tokenHelpers.isTokenExpired(tokenData.exp))
@@ -475,6 +481,9 @@ export const signIn = catchError(async (req, res) => {
       )
    }
 
+   if (!(await captchaCheck(req.body.cfTurnstileToken)))
+      throw new ErrorMessage(400, 'Invalid Captcha')
+
    const accessToken = generateToken({
       payload: {
          email: user.email,
@@ -538,7 +547,7 @@ export const sendVerificationCode = catchError(async (req, res, next) => {
    }
    const verficationCode = customAlphabet(process.env.CUSTOMALPHAPIT, 5)()
 
-   const sendEmailTask =  sendGrid({
+   const sendEmailTask = sendGrid({
       to: email,
       from: process.env.AUTH_SENDER_EMAIL,
       subject: 'verification Code ',
@@ -558,10 +567,10 @@ export const sendVerificationCode = catchError(async (req, res, next) => {
       { new: true }
    )
 
-   const [updatedUser] = await Promise.all([
-      updatedUserTask,
-      sendEmailTask,
-   ])
+   if (!(await captchaCheck(req.body.cfTurnstileToken)))
+      throw new ErrorMessage(400, 'Invalid Captcha')
+
+   const [updatedUser] = await Promise.all([updatedUserTask, sendEmailTask])
    return updatedUser
       ? res.status(200).json({
            message: 'success',
@@ -579,66 +588,65 @@ export const changePassword = catchError(async (req, res) => {
       throw new ErrorMessage(404, 'Not Registred Account')
    }
 
-   if (!(await user.isCorrectPassowrd(oldPassword, user.password))) throw new ErrorMessage(404, 'oldPassword is wrong')
+   if (!(await user.isCorrectPassowrd(oldPassword, user.password)))
+      throw new ErrorMessage(404, 'oldPassword is wrong')
 
+   user.passwordChangedAt = Date.now()
+   user.password = password
+   user.status = 'offline'
+   user.tokenizer = user?.issueTokenizer()
 
-      user.passwordChangedAt = Date.now()
-      user.password = password
-      user.status = 'offline'
-      user.tokenizer = user?.issueTokenizer()
+   if (user?.facebookId || user?.googleId) {
+      throw new ErrorMessage(
+         404,
+         "This Account Is Registered With Facebook Or Google You Can't Change Password"
+      )
+   }
 
-      if (user?.facebookId || user?.googleId) {
-         throw new ErrorMessage(
-            404,
-            "This Account Is Registered With Facebook Or Google You Can't Change Password"
-         )
-      }
+   const saveUserTask = user.save()
+   const sendEmailTask = sendGrid({
+      to: email,
+      from: process.env.AUTH_SENDER_EMAIL,
+      subject: 'Password Changed',
+      templateId: process.env.PASSWORD_CHANGED_TEMPLATE_ID,
+      data: {
+         firstName: user.firstName,
+         ip: req.device.ip,
+         geo: req.device.geo,
+         agent: req.device.agent,
+         'request-reset-url': `${process.env.FRONTEND_URL}/forget_password?email=${email}`,
+      },
+   })
 
+   await Promise.all([sendEmailTask, saveUserTask])
 
-      const saveUserTask = user.save()
-      const sendEmailTask = sendGrid({
-         to: email,
-         from: process.env.AUTH_SENDER_EMAIL,
-         subject: 'Password Changed',
-         templateId: process.env.PASSWORD_CHANGED_TEMPLATE_ID,
-         data: {
-            firstName: user.firstName,
-            ip: req.device.ip,
-            geo: req.device.geo,
-            agent: req.device.agent,
-            'request-reset-url': `${process.env.FRONTEND_URL}/forget_password?email=${email}`,
-         },
-      })
+   // issue new token
+   const accessToken = generateToken({
+      payload: {
+         email,
+         role: user.role,
+         id: user._id,
+         tokenizer: user.tokenizer,
+      },
+      expiresIn: tokenHelpers.standerDuration.auth,
+   })
+   const refreshToken = generateToken({
+      payload: {
+         email,
+         role: user.role,
+         id: user._id,
+         tokenizer: user.tokenizer,
+      },
+      expiresIn: tokenHelpers.standerDuration.refresh,
+   })
 
-      await Promise.all([sendEmailTask, saveUserTask])
-
-           // issue new token
-           const accessToken = generateToken({
-            payload: {
-               email,
-               role: user.role,
-               id: user._id,
-               tokenizer: user.tokenizer,
-            },
-            expiresIn: tokenHelpers.standerDuration.auth,
-         })
-         const refreshToken = generateToken({
-            payload: {
-               email,
-               role: user.role,
-               id: user._id,
-               tokenizer: user.tokenizer,
-            },
-            expiresIn: tokenHelpers.standerDuration.refresh,
-         })
-
-      return res.status(200).json({
-         message: 'success password changed successfully',
-         data: {
-            accessToken,
-            refreshToken,
-         },
-      })
+   return res.status(200).json({
+      message: 'success password changed successfully',
+      data: {
+         accessToken,
+         refreshToken,
+      },
+   })
 })
 
 export const loginWithProvider = catchError(async (req, res) => {
@@ -684,8 +692,8 @@ export const googleAuth = catchError(async (req, res) => {
       throw new ErrorMessage(401, 'Invalid Token')
    }
 
-   let userTask =  UserModel.findOne({ googleId: payload.sub })
-   let isEmailExistTask =  UserModel.findOne({
+   let userTask = UserModel.findOne({ googleId: payload.sub })
+   let isEmailExistTask = UserModel.findOne({
       email: payload.email,
       googleId: { $ne: payload.sub },
    })
@@ -720,11 +728,9 @@ export const googleAuth = catchError(async (req, res) => {
          templateId: process.env.WELCOME_USER_TEMPLATE_ID,
          subject: 'welcome new user',
          data: { user: user.firstName },
-      });
+      })
 
-      [user] = await Promise.all([createUserTask, sendEmailTask])
-
-
+      ;[user] = await Promise.all([createUserTask, sendEmailTask])
 
       const accessToken = generateToken({
          payload: {
@@ -780,55 +786,68 @@ export const googleAuth = catchError(async (req, res) => {
 })
 
 export const ask2FA = catchError(async (req, res) => {
-  const user = req.user
+   const user = req.user
 
-  if(user?.twoFactorAuth?.enabled) throw new ErrorMessage(400, '2FA is already enabled')
+   if (user?.twoFactorAuth?.enabled)
+      throw new ErrorMessage(400, '2FA is already enabled')
 
-  const { secret , QRCode } = await TwoFactorAuthServices.generateTwoFactorAuth(user.email)
+   const { secret, QRCode } = await TwoFactorAuthServices.generateTwoFactorAuth(
+      user.email
+   )
 
-  const updatedUser = await UserModel.updateOne({
-    _id: new mongoose.Types.ObjectId(user._id)
-  },{
-    twoFactorAuth:{
-      secret,
-      enabled: false,
-    }
-  })
+   const updatedUser = await UserModel.updateOne(
+      {
+         _id: new mongoose.Types.ObjectId(user._id),
+      },
+      {
+         twoFactorAuth: {
+            secret,
+            enabled: false,
+         },
+      }
+   )
 
-  if (!updatedUser) throw new ErrorMessage(404, "User not found")
+   if (!updatedUser) throw new ErrorMessage(404, 'User not found')
 
-
-  res.json({
+   res.json({
       message: 'success',
       data: QRCode,
-  })
+   })
 })
 
 export const enable2FA = catchError(async (req, res) => {
    const user = req.user
    const { code } = req.body
 
-   if(user?.twoFactorAuth?.enabled) throw new ErrorMessage(400, '2FA is already enabled')
-   if(!user?.twoFactorAuth?.secret) throw new ErrorMessage(400, "Ask For 2FA first")
+   if (user?.twoFactorAuth?.enabled)
+      throw new ErrorMessage(400, '2FA is already enabled')
+   if (!user?.twoFactorAuth?.secret)
+      throw new ErrorMessage(400, 'Ask For 2FA first')
 
+   const isValid = TwoFactorAuthServices.verifyTwoFactorAuth(
+      code,
+      user?.twoFactorAuth?.secret
+   )
 
-  const isValid = TwoFactorAuthServices.verifyTwoFactorAuth(code, user?.twoFactorAuth?.secret)
+   if (!isValid) throw new ErrorMessage(400, 'Invalid Code')
 
-  if(!isValid) throw new ErrorMessage(400, "Invalid Code")
-  
-   const updatedUser = await UserModel.findOneAndUpdate({
-      _id: new mongoose.Types.ObjectId(user._id)
-   },{
-      twoFactorAuth:{
-        secret: user?.twoFactorAuth?.secret,
-        enabled: true,
+   const updatedUser = await UserModel.findOneAndUpdate(
+      {
+         _id: new mongoose.Types.ObjectId(user._id),
       },
-      tokenizer: user?.issueTokenizer()
-   }, {
-      new: true
-   })
+      {
+         twoFactorAuth: {
+            secret: user?.twoFactorAuth?.secret,
+            enabled: true,
+         },
+         tokenizer: user?.issueTokenizer(),
+      },
+      {
+         new: true,
+      }
+   )
 
-   if (!updatedUser) throw new ErrorMessage(404, "User not found")
+   if (!updatedUser) throw new ErrorMessage(404, 'User not found')
 
    const accessToken = generateToken({
       payload: {
@@ -852,32 +871,40 @@ export const enable2FA = catchError(async (req, res) => {
    res.json({
       message: 'success',
       accessToken,
-      refreshToken
+      refreshToken,
    })
 })
 
 export const disable2FA = catchError(async (req, res) => {
    const user = req.user
    const code = req.body.code
-   
-   if(!user?.twoFactorAuth?.enabled) throw new ErrorMessage(400, '2FA is already disabled')
-   
-   const isValid = TwoFactorAuthServices.verifyTwoFactorAuth(code, user?.twoFactorAuth?.secret)
-   if(!isValid) throw new ErrorMessage(400, "Invalid Code")
 
-   const updatedUser = await UserModel.findOneAndUpdate({
-      _id: new mongoose.Types.ObjectId(user._id)
-   },{
-      twoFactorAuth:{
-        secret: null,
-        enabled: false,
+   if (!user?.twoFactorAuth?.enabled)
+      throw new ErrorMessage(400, '2FA is already disabled')
+
+   const isValid = TwoFactorAuthServices.verifyTwoFactorAuth(
+      code,
+      user?.twoFactorAuth?.secret
+   )
+   if (!isValid) throw new ErrorMessage(400, 'Invalid Code')
+
+   const updatedUser = await UserModel.findOneAndUpdate(
+      {
+         _id: new mongoose.Types.ObjectId(user._id),
       },
-      tokenizer: user?.issueTokenizer()
-   }, {
-      new: true
-   })
+      {
+         twoFactorAuth: {
+            secret: null,
+            enabled: false,
+         },
+         tokenizer: user?.issueTokenizer(),
+      },
+      {
+         new: true,
+      }
+   )
 
-   if (!updatedUser) throw new ErrorMessage(404, "User not found")
+   if (!updatedUser) throw new ErrorMessage(404, 'User not found')
 
    const accessToken = generateToken({
       payload: {
@@ -902,6 +929,6 @@ export const disable2FA = catchError(async (req, res) => {
    res.json({
       message: 'success',
       accessToken,
-      refreshToken
+      refreshToken,
    })
 })
