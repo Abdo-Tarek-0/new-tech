@@ -3,7 +3,7 @@ import * as controller from './subscriper.controller.js'
 import auth from '../../middleware/auth.js'
 import * as validator from './subscriper.validation.js'
 import { validation } from '../../middleware/validation.js'
-import captchaCheck from '../../middleware/captchaCheck.js'
+import captchaCheck from '../../middleware/captchaCheck.middleware.js'
 
 const router = Router()
 
@@ -27,8 +27,8 @@ router
    .route('/getintouch')
 
    .post(
-      captchaCheck,
       validation(validator.addGetInTouchSchema),
+      captchaCheck,
       controller.addNewGetInTouchAccount
    )
 
