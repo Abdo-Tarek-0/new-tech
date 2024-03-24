@@ -9,6 +9,7 @@ export const signUpSchema = joi
       password: generalFields.password.required(),
       // country: joi.string(),
       // cPassword: generalFields.cPassword.valid(joi.ref("password")),
+      cfTurnstileToken: joi.string().required(),
       file: generalFields.file,
 
       phone: joi.string(),
@@ -19,6 +20,7 @@ export const signInSchema = joi
    .object({
       email: generalFields.email.required(),
       password: generalFields.password.required(),
+      cfTurnstileToken: joi.string().required(),
       code: joi.string(),
    })
    .required()
@@ -41,6 +43,7 @@ export const forgetPasswordSchema = joi
 export const sendVerificationCodeSchema = joi
    .object({
       email: generalFields.email.required(),
+      cfTurnstileToken: joi.string().required(),
    })
    .required()
 
