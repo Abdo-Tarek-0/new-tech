@@ -13,6 +13,7 @@ export const addGetInTouchSchema = joi
       phone: joi.string().min(5).required(),
       message: joi.string().min(5),
       name: joi.string().min(4),
+      cfTurnstileToken: joi.string().required(),
    })
    .required()
 export const broadcastSchema = joi
