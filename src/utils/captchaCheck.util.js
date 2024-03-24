@@ -2,6 +2,9 @@ import axios from 'axios'
 
 const captchaCheck = async (captcha) => {
    try {
+      const mode = process.env.MOOD
+      if (mode === 'DEV') return true
+
       const secret = process.env.CLOUDFLARE_CAPTCHA_KEY
       if (!captcha) return false
       const response = await axios.post(

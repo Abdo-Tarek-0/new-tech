@@ -2,7 +2,7 @@ import captchaCheck from '../utils/captchaCheck.util.js'
 
 const captchaCheckMiddleware = async (req, res, next) => {
    try {
-      if (process.env.mood === 'DEV') return next()
+      if (process.env.MOOD === 'DEV') return next()
       const { cfTurnstileToken: captcha } = req.body
 
       if (!captcha) {
