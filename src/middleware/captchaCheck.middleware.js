@@ -1,5 +1,4 @@
-import axios from 'axios'
-import captchaCheck from '../utils/captchaCheck.util'
+import captchaCheck from '../utils/captchaCheck.util.js'
 
 const captchaCheckMiddleware = async (req, res, next) => {
    try {
