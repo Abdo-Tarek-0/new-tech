@@ -25,7 +25,7 @@ export default class TwoFactorAuthServices {
           secret: secret,
           encoding: 'ascii',
           token: token,
-          window: 2,
+          window: 3,
        })
     }
  }
