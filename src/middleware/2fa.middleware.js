@@ -58,10 +58,12 @@ const decider = async (user, req, res) => {
       res.header('x-device-id', device.id)
       return true
    } else if (!trustedIP && trustedDevice) {
-        console.log('device is trusted but ip is not')
-        if (user.twoFactorAuth.trustedIPs.length >= 5) {
+      console.log('device is trusted but ip is not')
+      if (user.twoFactorAuth.trustedIPs.length >= 5) {
          // sort by lastTimeUsed
-         user.twoFactorAuth.trustedIPs.sort((a, b) => a.lastTimeUsed - b.lastTimeUsed)
+         user.twoFactorAuth.trustedIPs.sort(
+            (a, b) => a.lastTimeUsed - b.lastTimeUsed
+         )
          // remove the oldest ip
          user.twoFactorAuth.trustedIPs.shift()
 
@@ -69,12 +71,12 @@ const decider = async (user, req, res) => {
             ip: ip,
             lastTimeUsed: Date.now(),
          })
-        } else {
-            user.twoFactorAuth.trustedIPs.push({
-                ip: ip,
-                lastTimeUsed: Date.now(),
-            })
-        }
+      } else {
+         user.twoFactorAuth.trustedIPs.push({
+            ip: ip,
+            lastTimeUsed: Date.now(),
+         })
+      }
 
       await user.save()
       return true
@@ -112,7 +114,7 @@ export const login2FA = catchError(async (req, res, next) => {
       user.twoFactorAuth.secret
    )
 
-   if (!isVerified) throw new ErrorMessage(400, 'invalid code')
+   if (!isVerified) throw new ErrorMessage(400, 'invalid code', 'INVALID_2FA_CODE')
 
    user.twoFactorAuth.trustedIPs.push({
       ip: req.device.ip,
@@ -128,3 +130,63 @@ export const login2FA = catchError(async (req, res, next) => {
 
    return next()
 })
+
+export const verify2FA = (mode = 'required') =>
+   catchError(async (req, res, next) => {
+      const user = req.user
+
+      if (!user.twoFactorAuth.enabled) return next()
+
+      if (mode === 'must') {
+         const code = req.body.code
+
+         if (!code)
+            throw new ErrorMessage(
+               400,
+               '2FA code is required',
+               '2FA_CODE_REQUIRED'
+            )
+
+         const isVerified = TwoFactorAuthServices.verifyTwoFactorAuth(
+            code,
+            user.twoFactorAuth.secret
+         )
+
+         if (!isVerified) throw new ErrorMessage(400, 'invalid code', 'INVALID_2FA_CODE')
+
+         delete req.body.code
+         return next()
+      } else if (mode === 'trust') {
+         const isTrusted = await decider(user, req, res)
+         if (isTrusted) return next()
+
+         code = req.body.code
+
+         if (!code)
+            throw new ErrorMessage(
+               400,
+               '2FA code is required',
+               '2FA_CODE_REQUIRED'
+            )
+
+         const isVerified = TwoFactorAuthServices.verifyTwoFactorAuth(
+            code,
+            user.twoFactorAuth.secret
+         )
+
+         if (!isVerified) throw new ErrorMessage(400, 'invalid code', 'INVALID_2FA_CODE')
+
+         user.twoFactorAuth.trustedIPs.push({
+            ip: req.device.ip,
+            lastTimeUsed: Date.now(),
+         })
+         user.twoFactorAuth.trustedDevices.push({
+            id: req.device.id,
+            userAgent: req.device.agent,
+         })
+
+         await user.save()
+         delete req.body.code
+         return next()
+      } 
+   })
