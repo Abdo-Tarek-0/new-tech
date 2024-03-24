@@ -89,6 +89,7 @@ export const login2FA = catchError(async (req, res, next) => {
       'firstName lastName confirmEmail role _id email passwordChangedAt suspend tokenizer +twoFactorAuth.secret twoFactorAuth.enabled +twoFactorAuth.trustedIPs +twoFactorAuth.trustedDevices +password'
    )
 
+   // normal login
    if (!user) throw new ErrorMessage(404, 'wrong email or password')
    if (!(await user.isCorrectPassowrd(password, user.password)))
       throw new ErrorMessage(404, 'wrong email or password')
@@ -98,6 +99,7 @@ export const login2FA = catchError(async (req, res, next) => {
    req.user = user
    if (!user?.twoFactorAuth?.enabled) return next()
 
+   // 2FA login
    const isTrusted = await decider(user, req, res)
    if (isTrusted) return next()
 
