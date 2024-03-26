@@ -688,6 +688,8 @@ export const googleAuth = catchError(async (req, res) => {
    })
    const payload = ticket.getPayload()
 
+   console.log('payload-google-auth', payload)
+
    if (!payload || !payload.email) {
       throw new ErrorMessage(401, 'Invalid Token')
    }
