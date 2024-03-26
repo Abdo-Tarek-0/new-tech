@@ -283,9 +283,16 @@ export const requestChangeEmail = catchError(async (req, res) => {
       throw new ErrorMessage(404, 'User Not Found')
    }
    if (!(await user.isCorrectPassowrd(password, user.password)))
-      throw new ErrorMessage(404, 'Password is incorrect')
+      throw new ErrorMessage(401, 'Password is incorrect')
 
    if (user.email === email) throw new ErrorMessage(404, 'Email is the same')
+
+   if (user.googleId || user.facebookId) {
+      throw new ErrorMessage(
+         401,
+         "This Account Is Registered With Facebook Or Google You Can't Change Email"
+      )
+   }
 
    let numCodeRequested = user?.emailChangeVerify?.maxNumber ?? 3
    let lastTimeCodeRequested =
