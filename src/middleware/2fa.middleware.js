@@ -88,13 +88,14 @@ const decider = async (user, req, res) => {
 export const login2FA = catchError(async (req, res, next) => {
    const { password, email } = req.body
    const user = await UserModel.findOne({ email: email }).select(
-      'firstName lastName confirmEmail role _id email passwordChangedAt suspend tokenizer +twoFactorAuth.secret twoFactorAuth.enabled +twoFactorAuth.trustedIPs +twoFactorAuth.trustedDevices +password'
+      'firstName lastName confirmEmail role _id email passwordChangedAt suspend tokenizer +twoFactorAuth.secret twoFactorAuth.enabled +twoFactorAuth.trustedIPs +twoFactorAuth.trustedDevices +password googleId facebookId'
    )
 
    // normal login
-   if (!user) throw new ErrorMessage(404, 'wrong email or password')
+   if (!user) throw new ErrorMessage(401, 'wrong email or password')
+   if(user.googleId || user.facebookId) throw new ErrorMessage(401, 'wrong email or password')
    if (!(await user.isCorrectPassowrd(password, user.password)))
-      throw new ErrorMessage(404, 'wrong email or password')
+      throw new ErrorMessage(401, 'wrong email or password')
    if (user.suspend)
       throw new ErrorMessage(401, 'sorry you have been suspended by admin')
 
