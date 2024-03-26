@@ -702,11 +702,50 @@ export const googleAuth = catchError(async (req, res) => {
 
    let [user, isEmailExist] = await Promise.all([userTask, isEmailExistTask])
 
-   if (isEmailExist) {
-      throw new ErrorMessage(
-         401,
-         'Email Already Exist, Please login with your email and password'
+   // if (isEmailExist) {
+   //    throw new ErrorMessage(
+   //       401,
+   //       'Email Already Exist, Please login with your email and password'
+   //    )
+   // }
+
+   if (!user && isEmailExist) {
+      const updateUserTask = UserModel.findOneAndUpdate(
+         { email: payload.email },
+         { googleId: payload.sub }
       )
+
+      user = await updateUserTask
+
+      if (!user) {
+         throw new ErrorMessage(404, 'User Not Found')
+      }
+
+      const accessToken = generateToken({
+         payload: {
+            email: user.email,
+            role: user.role,
+            id: user._id,
+            tokenizer: user.tokenizer,
+         },
+         expiresIn: tokenHelpers.standerDuration.auth,
+      })
+
+      const refreshToken = generateToken({
+         payload: {
+            email: user.email,
+            role: user.role,
+            id: user._id,
+            tokenizer: user.tokenizer,
+         },
+         expiresIn: tokenHelpers.standerDuration.refresh,
+      })
+
+      return res.status(200).json({
+         message: 'success',
+         accessToken,
+         refreshToken,
+      })
    }
 
    if (!user) {
