@@ -62,21 +62,24 @@ router
       validation(validator.deleteCategoryService),
       controller.deleteCategoryService
    )
+router.route('/:serviceId/variations').get(
+   // get all service variations
+   validation(validator.getServiceVariations),
+   controller.getServiceVariations
+)
 router
-   .route('/:serviceId/variations')
-   .get(
-      // get all service variations
-      validation(validator.getServiceVariations),
-      controller.getServiceVariations
+   .route('/:serviceId/variations/addSelect')
+   .post(
+      validation(validator.addVariationSelect),
+      controller.addVariationSelect
    )
-   router.route('/:serviceId/variations/addSelect', (req,res)=>{})
-   // .post(
-   //    auth('admin', 'tech'),
-   //    // to add variation to a service
-   //    fileUpload('services', fileValidation.image).single('largeImage'),
-   //    validation(validator.addVariationToService),
-   //    controller.addVariationToService
-   // )
+// .post(
+//    auth('admin', 'tech'),
+//    // to add variation to a service
+//    fileUpload('services', fileValidation.image).single('largeImage'),
+//    validation(validator.addVariationToService),
+//    controller.addVariationToService
+// )
 
 router
    .route('/:serviceId/variations/:variationId')
