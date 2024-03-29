@@ -20,6 +20,7 @@ export const signInSchema = joi
    .object({
       email: generalFields.email.required(),
       password: generalFields.password.required(),
+      keepMeLoggedIn: joi.boolean(),
       cfTurnstileToken: joi.string(),
       code: joi.string(),
    })
