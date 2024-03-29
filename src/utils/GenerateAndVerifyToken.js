@@ -41,7 +41,7 @@ export const tokenHelpers = {
    //    return Date.now() >= iat * 1000 + this.standerDuration.refresh * 1000
    // },
    calcExpires(iat, exp) {
-      return exp - iat
+      return Math.round(exp - iat)
    },
 
    standerDuration: {
