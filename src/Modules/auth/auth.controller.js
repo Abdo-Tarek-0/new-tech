@@ -999,7 +999,7 @@ export const disable2FA = catchError(async (req, res) => {
 })
 
 export const refreshToken = catchError(async (req, res) => {
-   const { refreshToken, keepMeLoggedIn } = req.body
+   const { refreshToken } = req.body
 
    if (!refreshToken) throw new ErrorMessage(401, 'Invalid Token')
 
