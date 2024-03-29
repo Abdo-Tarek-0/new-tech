@@ -33,7 +33,7 @@ export const getCategoryServices = catchError(async (req, res) => {
 })
 
 export const getSingleService = catchError(async (req, res) => {
-   const service = await ServicesModel.findOne({
+   let service = ServicesModel.findOne({
       _id: req.params.serviceId,
    }).populate({
       path: 'oldWork',
@@ -41,10 +41,25 @@ export const getSingleService = catchError(async (req, res) => {
          path: 'projectCategory',
       },
    })
+
+   let variations = variationsModel.find({
+      serviceId: req.params.serviceId,
+   });
+
+   [service, variations] = await Promise.all([service, variations])
+
+
    if (!service) {
       throw new ErrorMessage(404, 'no services found for this category')
    }
-   res.status(200).json(service)
+
+
+   res.status(200).json({
+      data: {
+         ...service._doc,
+         variations,
+      }
+   })
 })
 export const addCategoryService = catchError(async (req, res) => {
    Object.keys(req.files).forEach((file) => {
@@ -147,6 +162,32 @@ export const addVariationSelect = catchError(async (req, res) => {
    res.status(201).json({
       data: newVariation,
    })
+})
+
+export const addVariationInput = catchError(async (req, res) => {
+   const serviceId = req.params.serviceId
+
+   req.body.type = 'input-num';
+   req.body.serviceId = serviceId;
+
+   const service = await ServicesModel.findOne({
+      _id: serviceId,
+   })
+
+   if (!service) {
+      throw new ErrorMessage(404, 'no services found for this category')
+   }
+
+   const newVariation = await new variationsModel(req.body).save()
+
+   if (!newVariation) {
+      throw new ErrorMessage(404, 'No Variation Added Check Your Data')
+   }
+
+   res.status(201).json({
+      data: newVariation,
+   })
+
 })
 // export const addVariationToService = catchError(async (req, res) => {
 //    if (req.file) {
