@@ -213,7 +213,7 @@ export const editVariationSelect = catchError(async (req, res) => {
       {
          type,
          ...req.body,
-      },
+      }
    )
 
    if (updatedVariation.matchedCount === 0) {
@@ -222,7 +222,62 @@ export const editVariationSelect = catchError(async (req, res) => {
 
    res.status(201).json({
       message: 'variation is updated successfully..!',
-   
+   })
+})
+
+export const editVariationInput = catchError(async (req, res) => {
+   const variationId = req.params.variationId
+   const maxValue = req.body.maxValue
+   const minValue = req.body.minValue
+   const step = req.body.step
+
+   const variation = await variationsModel.findOne({
+      _id: variationId,
+   })
+
+   if (!variation) {
+      throw new ErrorMessage(404, 'no such variation found')
+   }
+
+   if (!variation?.type?.startsWith('input')) {
+      throw new ErrorMessage(404, 'The variation is not an input type')
+   }
+
+   if (maxValue) {
+      if (maxValue < variation.minValue) {
+         throw new ErrorMessage(
+            404,
+            'Max value should be greater than min value'
+         )
+      }
+   }
+
+   if (minValue) {
+      if (minValue > variation.maxValue) {
+         throw new ErrorMessage(404, 'Min value should be less than max value')
+      }
+   }
+
+   if (step) {
+      if (step > variation.maxValue) {
+         throw new ErrorMessage(404, 'Step value should be less than max value')
+      }
+   }
+
+   const updatedVariation = await variationsModel.updateOne(
+      { _id: variationId },
+      {
+         type: 'input-num',
+         ...req.body,
+      }
+   )
+
+   if (updatedVariation.matchedCount === 0) {
+      throw new ErrorMessage(404, 'No such variation found')
+   }
+
+   res.status(201).json({
+      message: 'variation is updated successfully..!',
    })
 })
 // export const addVariationToService = catchError(async (req, res) => {
