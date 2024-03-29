@@ -112,6 +112,19 @@ export const editVariationSelect = joi
          })
       ),
    })
+   .required()
+
+export const editVariationInput = joi
+   .object({
+      variationId: generalFields.id.required(),
+      name: joi.string().min(2),
+      isOptional: joi.boolean(),
+      minValue: joi.number(),
+      maxValue: joi.number(),
+      step: joi.number(),
+      priceBerStep: joi.number(),
+   })
+   .required()
 
 // export const addVariationToService = joi
 //    .object({
