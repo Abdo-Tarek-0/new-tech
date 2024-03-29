@@ -31,8 +31,9 @@ export const tokenHelpers = {
       return decoded.tokenizer === tokenizer
    },
    standerDuration: {
-      auth: 60 * 60,
-      refresh: 60 * 60 * 24 * 30,
+      auth: 60 * 60 * 24, // 24 hours
+      refresh: 60 * 60 * 24 * 3,
+      refreshKeepMeLoggedIn: 60 * 60 * 24 * 7,
 
       requestConfirmEmail: 60 * 60,
       requestNewConfirmEmail: 60 * 60 * 24 * 30,
