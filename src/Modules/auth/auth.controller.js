@@ -662,6 +662,8 @@ export const changePassword = catchError(async (req, res) => {
       },
       expiresIn: tokenHelpers.standerDuration.auth,
    })
+
+
    const refreshToken = generateToken({
       payload: {
          reason: 'REFRESH_TOKEN',
@@ -670,7 +672,7 @@ export const changePassword = catchError(async (req, res) => {
          id: user._id,
          tokenizer: user.tokenizer,
       },
-      expiresIn: tokenHelpers.standerDuration.refresh,
+      expiresIn: tokenHelpers.calcExpires(req.tokenData.iat, req.tokenData.exp),
    })
 
    return res.status(200).json({
