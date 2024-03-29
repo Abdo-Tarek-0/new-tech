@@ -155,18 +155,35 @@ export const addVariationToService = catchError(async (req, res) => {
 })
 
 export const getServiceVariations = catchError(async (req, res) => {
-   const service = await ServicesModel.findOne(
-      {
-         _id: req.params.serviceId,
-      },
-      { variations: 1, _id: 0 }
-   ).populate({
-      path: 'dropDownnNameId',
-   })
+   // const service = await ServicesModel.findOne(
+   //    {
+   //       _id: req.params.serviceId,
+   //    },
+   //    { variations: 1, _id: 0 }
+   // ).populate({
+   //    path: 'dropDownnNameId',
+   // })
+   const service = (
+      await ServicesModel.aggregate([
+         {
+            $match: {
+               _id: new mongoose.Types.ObjectId(req.params.serviceId),
+            },
+         },
+         {
+            $lookup: {
+               from: 'variations',
+               localField: '_id',
+               foreignField: 'serviceId',
+               as: 'variations',
+            },
+         },
+      ])
+   )?.[0]
    if (!service) {
       throw new ErrorMessage(404, 'no services found for this category')
    }
-   res.status(200).json(service.variations)
+   res.status(200).json(service?.variations)
 })
 
 export const editServiceVariation = catchError(async (req, res) => {
