@@ -44,21 +44,19 @@ export const getSingleService = catchError(async (req, res) => {
 
    let variations = variationsModel.find({
       serviceId: req.params.serviceId,
-   });
+   })
 
-   [service, variations] = await Promise.all([service, variations])
-
+   ;[service, variations] = await Promise.all([service, variations])
 
    if (!service) {
       throw new ErrorMessage(404, 'no services found for this category')
    }
 
-
    res.status(200).json({
       data: {
          ...service._doc,
          variations,
-      }
+      },
    })
 })
 export const addCategoryService = catchError(async (req, res) => {
@@ -142,13 +140,13 @@ export const addVariationSelect = catchError(async (req, res) => {
    const serviceId = req.params.serviceId
    const isMulti = req.body.isMulti
 
-   req.body.type = isMulti ? 'multi-select' : 'single-select';
-   req.body.serviceId = serviceId;
+   req.body.type = isMulti ? 'select-multi' : 'select-single'
+   req.body.serviceId = serviceId
 
    const service = await ServicesModel.findOne({
       _id: serviceId,
    })
-   
+
    if (!service) {
       throw new ErrorMessage(404, 'no services found for this category')
    }
@@ -167,8 +165,8 @@ export const addVariationSelect = catchError(async (req, res) => {
 export const addVariationInput = catchError(async (req, res) => {
    const serviceId = req.params.serviceId
 
-   req.body.type = 'input-num';
-   req.body.serviceId = serviceId;
+   req.body.type = 'input-num'
+   req.body.serviceId = serviceId
 
    const service = await ServicesModel.findOne({
       _id: serviceId,
@@ -187,7 +185,45 @@ export const addVariationInput = catchError(async (req, res) => {
    res.status(201).json({
       data: newVariation,
    })
+})
 
+export const editVariationSelect = catchError(async (req, res) => {
+   const variationId = req.params.variationId
+
+   const variation = await variationsModel.findOne({
+      _id: variationId,
+   })
+
+   if (!variation) {
+      throw new ErrorMessage(404, 'no such variation found')
+   }
+
+   if (!variation?.type?.startsWith('select')) {
+      throw new ErrorMessage(404, 'The variation is not a select type')
+   }
+   const type =
+      req.body.isMulti !== undefined
+         ? req.body.isMulti
+            ? 'select-multi'
+            : 'select-single'
+         : variation.type
+
+   const updatedVariation = await variationsModel.updateOne(
+      { _id: variationId },
+      {
+         type,
+         ...req.body,
+      },
+   )
+
+   if (updatedVariation.matchedCount === 0) {
+      throw new ErrorMessage(404, 'No such variation found')
+   }
+
+   res.status(201).json({
+      message: 'variation is updated successfully..!',
+   
+   })
 })
 // export const addVariationToService = catchError(async (req, res) => {
 //    if (req.file) {
