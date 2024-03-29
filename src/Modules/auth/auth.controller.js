@@ -264,7 +264,24 @@ export const confirmEmail = catchError(async (req, res) => {
       expiresIn: tokenHelpers.standerDuration.auth,
    })
 
+   const refreshToken = generateToken({
+      payload: {
+         reason: 'REFRESH_TOKEN',
+         email: user.email,
+         role: user.role,
+         id: user._id,
+         tokenizer: user.tokenizer,
+      },
+      expiresIn: tokenHelpers.standerDuration.refresh,
+   })
+
    res.cookie('token', accessToken, {
+      secure: true, // Ensure this is set to true if you're using HTTPS
+      sameSite: 'strict', // Strict sameSite setting for additional security
+      expires: new Date(Date.now() + 3600000), // 1 hour from now
+   })
+
+   res.cookie('refreshToken', refreshToken, {
       secure: true, // Ensure this is set to true if you're using HTTPS
       sameSite: 'strict', // Strict sameSite setting for additional security
       expires: new Date(Date.now() + 3600000), // 1 hour from now
