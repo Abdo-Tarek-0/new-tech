@@ -68,11 +68,18 @@ router.route('/:serviceId/variations').get(
    controller.getServiceVariations
 )
 router
-   .route('/:serviceId/variations/addSelect')
+   .route('/:serviceId/variations/select')
    .post(
       validation(validator.addVariationSelect),
       controller.addVariationSelect
    )
+router
+   .route('/:serviceId/variations/input')
+   .post(
+      validation(validator.addVariationInput),
+      controller.addVariationInput
+   )
+   
 // .post(
 //    auth('admin', 'tech'),
 //    // to add variation to a service
