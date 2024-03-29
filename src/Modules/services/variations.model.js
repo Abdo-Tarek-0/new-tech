@@ -14,7 +14,7 @@ const variationSchema = new mongoose.Schema({
    },
    type: {
       type: String,
-      enum: ['multi-select', 'single-select', 'input-num'],
+      enum: ['select-multi', 'select-single', 'input-num'],
       required: [true, 'type is required'],
    },
    isOptional: {
