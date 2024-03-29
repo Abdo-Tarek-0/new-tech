@@ -90,13 +90,13 @@ router
 
 router
    .route('/:serviceId/variations/:variationId')
-   .patch(
-      auth('admin', 'tech'),
-      // edit variation from a service
-      fileUpload('services', fileValidation.image).single('largeImage'),
-      validation(validator.editServiceVariation),
-      controller.editServiceVariation
-   )
+   // .patch(
+   //    auth('admin', 'tech'),
+   //    // edit variation from a service
+   //    fileUpload('services', fileValidation.image).single('largeImage'),
+   //    validation(validator.editServiceVariation),
+   //    controller.editServiceVariation
+   // )
    .delete(
       auth('admin', 'tech'),
       // edit variation from a service

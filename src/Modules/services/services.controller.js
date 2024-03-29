@@ -254,47 +254,47 @@ export const getServiceVariations = catchError(async (req, res) => {
    res.status(200).json(service?.variations)
 })
 
-export const editServiceVariation = catchError(async (req, res) => {
-   if (req.file) {
-      req.body.largeImage = req.file.dest
-   }
-   if (req.body.dropDownnNameId) {
-      const dropDownNames = await ServicesModel.findOne(
-         {
-            _id: req.params.serviceId,
-         },
-         { dropDownnNames: 1, _id: 0 }
-      )
-      let isThereDropDown = false
+// export const editServiceVariation = catchError(async (req, res) => {
+//    if (req.file) {
+//       req.body.largeImage = req.file.dest
+//    }
+//    if (req.body.dropDownnNameId) {
+//       const dropDownNames = await ServicesModel.findOne(
+//          {
+//             _id: req.params.serviceId,
+//          },
+//          { dropDownnNames: 1, _id: 0 }
+//       )
+//       let isThereDropDown = false
 
-      dropDownNames?.dropDownnNames?.forEach((item) => {
-         if (item._id === req.body.dropDownnNameId) {
-            isThereDropDown = true
-         }
-      })
+//       dropDownNames?.dropDownnNames?.forEach((item) => {
+//          if (item._id === req.body.dropDownnNameId) {
+//             isThereDropDown = true
+//          }
+//       })
 
-      if (!isThereDropDown) {
-         throw new ErrorMessage(404, 'there is no dropdown with this id ')
-      }
-   }
-   const query = {
-      _id: req.params.serviceId,
-      'variations._id': req.params.variationId,
-   }
-   const update = { $set: {} }
-   // for (const field in req.body) {
-   //    update.$set[`variations.$.${field}`] = req.body[field]
-   // }
-   Object.keys(req.body).forEach((field) => {
-      update.$set[`variations.$.${field}`] = req.body[field]
-   })
+//       if (!isThereDropDown) {
+//          throw new ErrorMessage(404, 'there is no dropdown with this id ')
+//       }
+//    }
+//    const query = {
+//       _id: req.params.serviceId,
+//       'variations._id': req.params.variationId,
+//    }
+//    const update = { $set: {} }
+//    // for (const field in req.body) {
+//    //    update.$set[`variations.$.${field}`] = req.body[field]
+//    // }
+//    Object.keys(req.body).forEach((field) => {
+//       update.$set[`variations.$.${field}`] = req.body[field]
+//    })
 
-   const updatedService = await ServicesModel.updateOne(query, update)
-   if (updatedService.matchedCount === 0) {
-      throw new ErrorMessage(404, "Service or variation ID doesn't exist 🙄")
-   }
-   res.status(201).json({ message: 'variation is updated successfully..!' })
-})
+//    const updatedService = await ServicesModel.updateOne(query, update)
+//    if (updatedService.matchedCount === 0) {
+//       throw new ErrorMessage(404, "Service or variation ID doesn't exist 🙄")
+//    }
+//    res.status(201).json({ message: 'variation is updated successfully..!' })
+// })
 export const deleteServiceVariation = catchError(async (req, res) => {
    const { variationId } = req.params
    const query = {
