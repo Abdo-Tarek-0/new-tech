@@ -997,3 +997,45 @@ export const disable2FA = catchError(async (req, res) => {
       refreshToken,
    })
 })
+
+export const refreshToken = catchError(async (req, res) => {
+   const { refreshToken, keepMeLoggedIn } = req.body
+
+   if (!refreshToken) throw new ErrorMessage(401, 'Invalid Token')
+
+   const decoded = verifyToken({ token: refreshToken, ignoreExpiration: true })
+
+   if (!decoded?.id) throw new ErrorMessage(401, 'Invalid Token Payload')
+
+   if (decoded.reason !== 'REFRESH_TOKEN')
+      throw new ErrorMessage(401, 'Invalid Token')
+
+   if (tokenHelpers.isRefreshExpired(decoded.iat, keepMeLoggedIn))
+      throw new ErrorMessage(401, 'Token is expired')
+
+   const user = await UserModel.findById(decoded.id).select(
+      'firstName lastName role _id email passwordChangedAt suspend tokenizer +twoFactorAuth.secret twoFactorAuth.enabled +twoFactorAuth.trustedIPs +twoFactorAuth.trustedDevices'
+   )
+
+   if (!user) throw new ErrorMessage(401, 'Not Registered User')
+   if (user.suspend)
+      throw new ErrorMessage(401, 'You have been suspended by admin')
+   if (!tokenHelpers.isTokenizerCorrect(decoded, user.tokenizer))
+      throw new ErrorMessage(401, 'Invalid Token')
+
+   const accessToken = generateToken({
+      payload: {
+         reason: 'ACCESS_TOKEN',
+         email: user.email,
+         role: user.role,
+         id: user._id,
+         tokenizer: user.tokenizer,
+      },
+      expiresIn: tokenHelpers.standerDuration.auth,
+   })
+
+   res.json({
+      message: 'success',
+      accessToken,
+   })
+})
