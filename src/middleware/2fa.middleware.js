@@ -6,7 +6,7 @@ import { ErrorMessage } from '../utils/ErrorMessage.js'
 const trustDevice = async (user, req, res) => {
    const device = req.device
    const ip = device.ip
-   
+
    if (user.twoFactorAuth.trustedDevices.length >= 5) {
       // sort by addAt
       user.twoFactorAuth.trustedDevices.sort((a, b) => a.addAt - b.addAt)
@@ -94,20 +94,18 @@ const decider = async (user, req, res) => {
 
       await trustDevice(user, req, res)
       return true
-      
    } else if (!trustedIP && trustedDevice) {
       console.log('device is trusted but ip is not')
 
       await trustIP(user, req, res)
       return true
-
    } else {
       return false
    }
 }
 
 export const login2FA = catchError(async (req, res, next) => {
-   const { password, email } = req.body
+   const { password, email, keepMeLoggedIn } = req.body
    const user = await UserModel.findOne({ email: email }).select(
       'firstName lastName confirmEmail role _id email passwordChangedAt suspend tokenizer +twoFactorAuth.secret twoFactorAuth.enabled +twoFactorAuth.trustedIPs +twoFactorAuth.trustedDevices +password googleId facebookId'
    )
@@ -121,6 +119,7 @@ export const login2FA = catchError(async (req, res, next) => {
    if (user.suspend)
       throw new ErrorMessage(401, 'sorry you have been suspended by admin')
 
+   user.keepMeLoggedIn = keepMeLoggedIn || false
    req.user = user
    if (!user?.twoFactorAuth?.enabled) return next()
 
