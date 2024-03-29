@@ -87,6 +87,11 @@ router.route('/variations/:variationId/select').patch(
    validation(validator.editVariationSelect),
    controller.editVariationSelect
 )
+router.route('/variations/:variationId/input').patch(
+   auth('admin'),
+   validation(validator.editVariationInput),
+   controller.editVariationInput
+)
    
 // .post(
 //    auth('admin', 'tech'),
