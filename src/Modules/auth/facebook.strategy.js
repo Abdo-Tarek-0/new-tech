@@ -53,6 +53,7 @@ export default new FacebookStrategy(
          user = user.toObject()
          const token = generateToken({
             payload: {
+               reason: "ACCESS_TOKEN",
                email: user.email,
                role: user.role,
                id: user._id,
@@ -62,6 +63,7 @@ export default new FacebookStrategy(
          })
          const refToken = generateToken({
             payload: {
+               reason: "REFRESH_TOKEN",
                email: user.email,
                role: user.role,
                id: user._id,
