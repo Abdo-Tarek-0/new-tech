@@ -70,17 +70,20 @@ router.route('/:serviceId/variations').get(
 router
    .route('/:serviceId/variations/select')
    .post(
+      auth('admin'),
       validation(validator.addVariationSelect),
       controller.addVariationSelect
    )
 router
    .route('/:serviceId/variations/input')
    .post(
+      auth('admin'),
       validation(validator.addVariationInput),
       controller.addVariationInput
    )
 
 router.route('/variations/:variationId/select').patch(
+   auth('admin'),
    validation(validator.editVariationSelect),
    controller.editVariationSelect
 )
