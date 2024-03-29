@@ -3,6 +3,67 @@ import TwoFactorAuthServices from '../services/2FA.services.js'
 import { catchError } from '../utils/catchAsyncError.js'
 import { ErrorMessage } from '../utils/ErrorMessage.js'
 
+const trustDevice = async (user, req, res) => {
+   const device = req.device
+   const ip = device.ip
+   
+   if (user.twoFactorAuth.trustedDevices.length >= 5) {
+      // sort by addAt
+      user.twoFactorAuth.trustedDevices.sort((a, b) => a.addAt - b.addAt)
+      // remove the oldest device
+      user.twoFactorAuth.trustedDevices.shift()
+
+      user.twoFactorAuth.trustedDevices.push({
+         id: device.id,
+         userAgent: device.agent,
+      })
+   } else {
+      user.twoFactorAuth.trustedDevices.push({
+         id: device.id,
+         userAgent: device.agent,
+      })
+   }
+
+   user.twoFactorAuth.trustedIPs = user.twoFactorAuth.trustedIPs.map((p) => {
+      if (p.ip === ip) {
+         p.lastTimeUsed = Date.now()
+      }
+      return p
+   })
+
+   await user.save()
+
+   res.header('x-device-id', device.id)
+   return device.id
+}
+
+const trustIP = async (user, req, res) => {
+   const device = req.device
+   const ip = device.ip
+
+   if (user.twoFactorAuth.trustedIPs.length >= 5) {
+      // sort by lastTimeUsed
+      user.twoFactorAuth.trustedIPs.sort(
+         (a, b) => a.lastTimeUsed - b.lastTimeUsed
+      )
+      // remove the oldest ip
+      user.twoFactorAuth.trustedIPs.shift()
+
+      user.twoFactorAuth.trustedIPs.push({
+         ip: ip,
+         lastTimeUsed: Date.now(),
+      })
+   } else {
+      user.twoFactorAuth.trustedIPs.push({
+         ip: ip,
+         lastTimeUsed: Date.now(),
+      })
+   }
+   await user.save()
+
+   return ip
+}
+
 const decider = async (user, req, res) => {
    const device = req.device
    const ip = device.ip
@@ -31,55 +92,15 @@ const decider = async (user, req, res) => {
    if (trustedIP && !trustedDevice) {
       console.log('ip is trusted but device is not')
 
-      if (user.twoFactorAuth.trustedDevices.length >= 5) {
-         // sort by addAt
-         user.twoFactorAuth.trustedDevices.sort((a, b) => a.addAt - b.addAt)
-         // remove the oldest device
-         user.twoFactorAuth.trustedDevices.shift()
-
-         user.twoFactorAuth.trustedDevices.push({
-            id: device.id,
-            userAgent: device.agent,
-         })
-      } else {
-         user.twoFactorAuth.trustedDevices.push({
-            id: device.id,
-            userAgent: device.agent,
-         })
-      }
-      user.twoFactorAuth.trustedIPs = user.twoFactorAuth.trustedIPs.map((p) => {
-         if (p.ip === ip) {
-            p.lastTimeUsed = Date.now()
-         }
-         return p
-      })
-
-      await user.save()
-      res.header('x-device-id', device.id)
+      await trustDevice(user, req, res)
       return true
+      
    } else if (!trustedIP && trustedDevice) {
       console.log('device is trusted but ip is not')
-      if (user.twoFactorAuth.trustedIPs.length >= 5) {
-         // sort by lastTimeUsed
-         user.twoFactorAuth.trustedIPs.sort(
-            (a, b) => a.lastTimeUsed - b.lastTimeUsed
-         )
-         // remove the oldest ip
-         user.twoFactorAuth.trustedIPs.shift()
 
-         user.twoFactorAuth.trustedIPs.push({
-            ip: ip,
-            lastTimeUsed: Date.now(),
-         })
-      } else {
-         user.twoFactorAuth.trustedIPs.push({
-            ip: ip,
-            lastTimeUsed: Date.now(),
-         })
-      }
-
-      await user.save()
+      await trustIP(user, req, res)
       return true
+
    } else {
       return false
    }
@@ -93,7 +114,8 @@ export const login2FA = catchError(async (req, res, next) => {
 
    // normal login
    if (!user) throw new ErrorMessage(401, 'wrong email or password')
-   if(user.googleId || user.facebookId) throw new ErrorMessage(401, 'wrong email or password')
+   if (user.googleId || user.facebookId)
+      throw new ErrorMessage(401, 'wrong email or password')
    if (!(await user.isCorrectPassowrd(password, user.password)))
       throw new ErrorMessage(401, 'wrong email or password')
    if (user.suspend)
@@ -115,7 +137,8 @@ export const login2FA = catchError(async (req, res, next) => {
       user.twoFactorAuth.secret
    )
 
-   if (!isVerified) throw new ErrorMessage(400, 'invalid code', 'INVALID_2FA_CODE')
+   if (!isVerified)
+      throw new ErrorMessage(400, 'invalid code', 'INVALID_2FA_CODE')
 
    user.twoFactorAuth.trustedIPs.push({
       ip: req.device.ip,
@@ -153,7 +176,8 @@ export const verify2FA = (mode = 'required') =>
             user.twoFactorAuth.secret
          )
 
-         if (!isVerified) throw new ErrorMessage(400, 'invalid code', 'INVALID_2FA_CODE')
+         if (!isVerified)
+            throw new ErrorMessage(400, 'invalid code', 'INVALID_2FA_CODE')
 
          delete req.body.code
          return next()
@@ -175,7 +199,8 @@ export const verify2FA = (mode = 'required') =>
             user.twoFactorAuth.secret
          )
 
-         if (!isVerified) throw new ErrorMessage(400, 'invalid code', 'INVALID_2FA_CODE')
+         if (!isVerified)
+            throw new ErrorMessage(400, 'invalid code', 'INVALID_2FA_CODE')
 
          user.twoFactorAuth.trustedIPs.push({
             ip: req.device.ip,
@@ -189,5 +214,5 @@ export const verify2FA = (mode = 'required') =>
          await user.save()
          delete req.body.code
          return next()
-      } 
+      }
    })
