@@ -255,6 +255,7 @@ export const confirmEmail = catchError(async (req, res) => {
 
    const accessToken = generateToken({
       payload: {
+         reason: 'ACCESS_TOKEN',
          email: user.email,
          role: user.role,
          id: user._id,
@@ -410,6 +411,7 @@ export const confirmChangeEmail = async (req, res) => {
 
       const accessToken = generateToken({
          payload: {
+            reason: 'ACCESS_TOKEN',
             email: user.email,
             role: user.role,
             id: user._id,
@@ -420,6 +422,7 @@ export const confirmChangeEmail = async (req, res) => {
 
       const refreshToken = generateToken({
          payload: {
+            reason: 'REFRESH_TOKEN',
             email: user.email,
             role: user.role,
             id: user._id,
@@ -493,6 +496,7 @@ export const signIn = catchError(async (req, res) => {
 
    const accessToken = generateToken({
       payload: {
+         reason: 'ACCESS_TOKEN',
          email: user.email,
          role: user.role,
          id: user._id,
@@ -502,6 +506,7 @@ export const signIn = catchError(async (req, res) => {
    })
    const refreshToken = generateToken({
       payload: {
+         reason: 'REFRESH_TOKEN',
          email: user.email,
          role: user.role,
          id: user._id,
@@ -630,6 +635,7 @@ export const changePassword = catchError(async (req, res) => {
    // issue new token
    const accessToken = generateToken({
       payload: {
+         reason: 'ACCESS_TOKEN',
          email,
          role: user.role,
          id: user._id,
@@ -639,6 +645,7 @@ export const changePassword = catchError(async (req, res) => {
    })
    const refreshToken = generateToken({
       payload: {
+         reason: 'REFRESH_TOKEN',
          email,
          role: user.role,
          id: user._id,
@@ -730,6 +737,7 @@ export const googleAuth = catchError(async (req, res) => {
 
       const accessToken = generateToken({
          payload: {
+            reason: 'ACCESS_TOKEN',
             email: user.email,
             role: user.role,
             id: user._id,
@@ -740,6 +748,7 @@ export const googleAuth = catchError(async (req, res) => {
 
       const refreshToken = generateToken({
          payload: {
+            reason: 'REFRESH_TOKEN',
             email: user.email,
             role: user.role,
             id: user._id,
@@ -782,6 +791,7 @@ export const googleAuth = catchError(async (req, res) => {
 
       const accessToken = generateToken({
          payload: {
+            reason: 'ACCESS_TOKEN',
             email: user.email,
             role: user.role,
             id: user._id,
@@ -792,6 +802,7 @@ export const googleAuth = catchError(async (req, res) => {
 
       const refreshToken = generateToken({
          payload: {
+            reason: 'REFRESH_TOKEN',
             email: user.email,
             role: user.role,
             id: user._id,
@@ -809,6 +820,7 @@ export const googleAuth = catchError(async (req, res) => {
 
    const accessToken = generateToken({
       payload: {
+         reason: 'ACCESS_TOKEN',
          email: user.email,
          role: user.role,
          id: user._id,
@@ -818,6 +830,7 @@ export const googleAuth = catchError(async (req, res) => {
    })
    const refreshToken = generateToken({
       payload: {
+         reason: 'REFRESH_TOKEN',
          email: user.email,
          role: user.role,
          id: user._id,
@@ -899,6 +912,7 @@ export const enable2FA = catchError(async (req, res) => {
 
    const accessToken = generateToken({
       payload: {
+         reason: 'ACCESS_TOKEN',
          email: updatedUser.email,
          role: updatedUser.role,
          id: updatedUser._id,
@@ -908,6 +922,7 @@ export const enable2FA = catchError(async (req, res) => {
    })
    const refreshToken = generateToken({
       payload: {
+         reason: 'REFRESH_TOKEN',
          email: updatedUser.email,
          role: updatedUser.role,
          id: updatedUser._id,
@@ -956,6 +971,7 @@ export const disable2FA = catchError(async (req, res) => {
 
    const accessToken = generateToken({
       payload: {
+         reason: 'ACCESS_TOKEN',
          email: updatedUser.email,
          role: updatedUser.role,
          id: updatedUser._id,
@@ -966,6 +982,7 @@ export const disable2FA = catchError(async (req, res) => {
 
    const refreshToken = generateToken({
       payload: {
+         reason: 'REFRESH_TOKEN',
          email: updatedUser.email,
          role: updatedUser.role,
          id: updatedUser._id,
