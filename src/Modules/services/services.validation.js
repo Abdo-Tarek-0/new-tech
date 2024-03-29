@@ -85,6 +85,19 @@ export const addVariationSelect = joi
          })
       ),
    })
+   .required()
+
+export const addVariationInput = joi
+   .object({
+      serviceId: generalFields.id.required(),
+      name: joi.string().min(2).required(),
+      isOptional: joi.boolean().required(),
+      minValue: joi.number().required(),
+      maxValue: joi.number().required(),
+      step: joi.number().required(),
+      priceBerStep: joi.number().required(),
+   })
+   .required()
 // export const addVariationToService = joi
 //    .object({
 //       serviceId: generalFields.id.required(),
