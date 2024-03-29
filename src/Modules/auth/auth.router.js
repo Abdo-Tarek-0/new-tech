@@ -103,4 +103,6 @@ router.post('/ask2FA' , auth('user', 'admin', 'tech'), authController.ask2FA)
 router.post('/enable2FA' , auth('user', 'admin', 'tech'), validation(authValidator.enable2FASchema), authController.enable2FA)
 router.post('/disable2FA' , auth('user', 'admin', 'tech'), validation(authValidator.disable2FASchema), authController.disable2FA)
 
+router.post('/refreshToken', validation(authValidator.refreshTokenSchema), authController.refreshToken)
+
 export default router
