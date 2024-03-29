@@ -1010,7 +1010,7 @@ export const refreshToken = catchError(async (req, res) => {
    if (decoded.reason !== 'REFRESH_TOKEN')
       throw new ErrorMessage(401, 'Invalid Token')
 
-   if (tokenHelpers.isRefreshExpired(decoded.iat, keepMeLoggedIn))
+   if (tokenHelpers.isTokenExpired(decoded.exp))
       throw new ErrorMessage(401, 'Token is expired')
 
    const user = await UserModel.findById(decoded.id).select(
