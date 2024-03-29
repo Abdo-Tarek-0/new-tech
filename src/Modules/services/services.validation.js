@@ -72,17 +72,17 @@ export const discountForSingleCategory = joi
       discount: joi.number().required().min(-100).max(100).required(),
    })
    .required()
-export const addVariationToService = joi
-   .object({
-      serviceId: generalFields.id.required(),
-      name: joi.string().min(2),
-      title: joi.string().min(2).required(),
-      topDescription: joi.string().min(5).max(800),
-      file: generalFields.file,
-      price: joi.number().min(0),
-      dropDownnNameId: generalFields.id.required(),
-   })
-   .required()
+// export const addVariationToService = joi
+//    .object({
+//       serviceId: generalFields.id.required(),
+//       name: joi.string().min(2),
+//       title: joi.string().min(2).required(),
+//       topDescription: joi.string().min(5).max(800),
+//       file: generalFields.file,
+//       price: joi.number().min(0),
+//       dropDownnNameId: generalFields.id.required(),
+//    })
+//    .required()
 
 export const editServiceVariation = joi
    .object({
