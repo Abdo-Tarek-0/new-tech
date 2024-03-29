@@ -512,7 +512,9 @@ export const signIn = catchError(async (req, res) => {
          id: user._id,
          tokenizer: user.tokenizer,
       },
-      expiresIn: tokenHelpers.standerDuration.refresh,
+      expiresIn: user.keepMeLoggedIn
+         ? tokenHelpers.standerDuration.refresh
+         : tokenHelpers.standerDuration.refreshKeepMeLoggedIn,
    })
    user.status = 'online'
    await user.save()
