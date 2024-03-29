@@ -949,7 +949,7 @@ export const enable2FA = catchError(async (req, res) => {
          id: updatedUser._id,
          tokenizer: updatedUser.tokenizer,
       },
-      expiresIn: tokenHelpers.standerDuration.refresh,
+      expiresIn: tokenHelpers.calcExpires(req.tokenData.iat, req.tokenData.exp),
    })
 
    res.json({
@@ -1009,7 +1009,7 @@ export const disable2FA = catchError(async (req, res) => {
          id: updatedUser._id,
          tokenizer: updatedUser.tokenizer,
       },
-      expiresIn: tokenHelpers.standerDuration.refresh,
+      expiresIn: tokenHelpers.calcExpires(req.tokenData.iat, req.tokenData.exp),
    })
 
    res.json({
