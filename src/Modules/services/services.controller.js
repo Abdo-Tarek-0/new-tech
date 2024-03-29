@@ -1,8 +1,10 @@
 import ServicesModel from './services.model.js'
+import variationsModel from './variations.model.js'
 import CategoriesModel from '../categories/categories.model.js'
 import { ErrorMessage } from '../../utils/ErrorMessage.js'
 import { catchError } from '../../utils/catchAsyncError.js'
 import Projects from '../projects/projects.model.js'
+import mongoose from 'mongoose'
 
 export const getAllServices = catchError(async (req, res) => {
    const services = await ServicesModel.find({}).populate('category')
@@ -121,36 +123,29 @@ export const discountForSingleCategory = catchError(async (req, res) => {
    res.status(200).json({ message: 'discount For Single Category is done..!' })
 })
 
-export const addVariationToService = catchError(async (req, res) => {
-   if (req.file) {
-      req.body.largeImage = req.file.dest
-   }
-   const dropDownNames = await ServicesModel.findOne(
-      {
-         _id: req.params.serviceId,
-      },
-      { dropDownnNames: 1, _id: 0 }
-   )
-   let isThereDropDown = false
+export const addVariationSelect = catchError(async (req, res) => {
+   const serviceId = req.params.serviceId
+   const isMulti = req.body.isMulti
 
-   dropDownNames?.dropDownnNames?.forEach((item) => {
-      if (item._id === req.body.dropDownnNameId) {
-         isThereDropDown = true
-      }
+   req.body.type = isMulti ? 'multi-select' : 'single-select';
+   req.body.serviceId = serviceId;
+
+   const service = await ServicesModel.findOne({
+      _id: serviceId,
    })
+   
+   if (!service) {
+      throw new ErrorMessage(404, 'no services found for this category')
+   }
 
-   if (!isThereDropDown) {
-      throw new ErrorMessage(404, 'there is no dropdown with this id ')
+   const newVariation = await new variationsModel(req.body).save()
+
+   if (!newVariation) {
+      throw new ErrorMessage(404, 'No Variation Added Check Your Data')
    }
-   const updatedService = await ServicesModel.updateOne(
-      { _id: req.params.serviceId },
-      { $push: { variations: req.body } }
-   )
-   if (updatedService.matchedCount === 0) {
-      throw new ErrorMessage(404, "service id doesn't exist 🙄")
-   }
+
    res.status(201).json({
-      message: 'variation is posted to service successfully..!',
+      data: newVariation,
    })
 })
 // export const addVariationToService = catchError(async (req, res) => {
@@ -413,7 +408,10 @@ export const editDropDown = catchError(async (req, res) => {
 
    const updatedService = await ServicesModel.updateOne(query, update)
    if (updatedService.matchedCount === 0) {
-      throw new ErrorMessage(404, "Service or dropDownnNames ID doesn't exist 🙄")
+      throw new ErrorMessage(
+         404,
+         "Service or dropDownnNames ID doesn't exist 🙄"
+      )
    }
    res.status(201).json({
       message: 'dropDownnNames is updated successfully..!',
