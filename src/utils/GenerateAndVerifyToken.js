@@ -30,6 +30,17 @@ export const tokenHelpers = {
    isTokenizerCorrect(decoded, tokenizer) {
       return decoded.tokenizer === tokenizer
    },
+
+   isRefreshExpired(iat, isKeepMeLoggedIn) {
+      if (isKeepMeLoggedIn) {
+         return (
+            Date.now() >=
+            iat * 1000 + this.standerDuration.refreshKeepMeLoggedIn * 1000
+         )
+      }
+      return Date.now() >= iat * 1000 + this.standerDuration.refresh * 1000
+   },
+
    standerDuration: {
       auth: 60 * 60 * 24, // 24 hours
       refresh: 60 * 60 * 24 * 3,
@@ -38,5 +49,5 @@ export const tokenHelpers = {
       requestConfirmEmail: 60 * 60,
       requestNewConfirmEmail: 60 * 60 * 24 * 30,
       requestChangeEmail: 60 * 60,
-   }
+   },
 }
