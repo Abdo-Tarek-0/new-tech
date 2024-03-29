@@ -78,6 +78,5 @@ export const disable2FASchema = joi
 export const refreshTokenSchema = joi
    .object({
       refreshToken: joi.string().required(),
-      keepMeLoggedIn: joi.boolean(),
    })
    .required()
