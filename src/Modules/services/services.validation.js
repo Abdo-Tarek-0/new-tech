@@ -93,8 +93,8 @@ export const addVariationInput = joi
       name: joi.string().min(2).required(),
       isOptional: joi.boolean().required(),
       minValue: joi.number().required(),
-      maxValue: joi.number().required(),
-      step: joi.number().required(),
+      maxValue: joi.number().required().min(joi.ref('minValue')),
+      step: joi.number().required().max(joi.ref('maxValue')),
       priceBerStep: joi.number().required(),
    })
    .required()
