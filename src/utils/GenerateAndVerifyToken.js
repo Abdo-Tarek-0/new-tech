@@ -31,14 +31,17 @@ export const tokenHelpers = {
       return decoded.tokenizer === tokenizer
    },
 
-   isRefreshExpired(iat, isKeepMeLoggedIn) {
-      if (isKeepMeLoggedIn) {
-         return (
-            Date.now() >=
-            iat * 1000 + this.standerDuration.refreshKeepMeLoggedIn * 1000
-         )
-      }
-      return Date.now() >= iat * 1000 + this.standerDuration.refresh * 1000
+   // isRefreshExpired(iat, isKeepMeLoggedIn) {
+   //    if (isKeepMeLoggedIn) {
+   //       return (
+   //          Date.now() >=
+   //          iat * 1000 + this.standerDuration.refreshKeepMeLoggedIn * 1000
+   //       )
+   //    }
+   //    return Date.now() >= iat * 1000 + this.standerDuration.refresh * 1000
+   // },
+   calcExpires(iat, exp) {
+      return exp - iat
    },
 
    standerDuration: {
