@@ -98,6 +98,21 @@ export const addVariationInput = joi
       priceBerStep: joi.number().required(),
    })
    .required()
+
+export const editVariationSelect = joi
+   .object({
+      variationId: generalFields.id.required(),
+      name: joi.string().min(2),
+      isMulti: joi.boolean(),
+      isOptional: joi.boolean(),
+      values: joi.array().items(
+         joi.object({
+            name: joi.string().min(2),
+            price: joi.number().min(0),
+         })
+      ),
+   })
+
 // export const addVariationToService = joi
 //    .object({
 //       serviceId: generalFields.id.required(),
