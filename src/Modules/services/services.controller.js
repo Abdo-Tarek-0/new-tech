@@ -153,6 +153,38 @@ export const addVariationToService = catchError(async (req, res) => {
       message: 'variation is posted to service successfully..!',
    })
 })
+// export const addVariationToService = catchError(async (req, res) => {
+//    if (req.file) {
+//       req.body.largeImage = req.file.dest
+//    }
+//    const dropDownNames = await ServicesModel.findOne(
+//       {
+//          _id: req.params.serviceId,
+//       },
+//       { dropDownnNames: 1, _id: 0 }
+//    )
+//    let isThereDropDown = false
+
+//    dropDownNames?.dropDownnNames?.forEach((item) => {
+//       if (item._id === req.body.dropDownnNameId) {
+//          isThereDropDown = true
+//       }
+//    })
+
+//    if (!isThereDropDown) {
+//       throw new ErrorMessage(404, 'there is no dropdown with this id ')
+//    }
+//    const updatedService = await ServicesModel.updateOne(
+//       { _id: req.params.serviceId },
+//       { $push: { variations: req.body } }
+//    )
+//    if (updatedService.matchedCount === 0) {
+//       throw new ErrorMessage(404, "service id doesn't exist 🙄")
+//    }
+//    res.status(201).json({
+//       message: 'variation is posted to service successfully..!',
+//    })
+// })
 
 export const getServiceVariations = catchError(async (req, res) => {
    // const service = await ServicesModel.findOne(

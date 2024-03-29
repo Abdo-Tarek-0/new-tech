@@ -69,13 +69,14 @@ router
       validation(validator.getServiceVariations),
       controller.getServiceVariations
    )
-   .post(
-      auth('admin', 'tech'),
-      // to add variation to a service
-      fileUpload('services', fileValidation.image).single('largeImage'),
-      validation(validator.addVariationToService),
-      controller.addVariationToService
-   )
+   router.route('/:serviceId/variations/addSelect', (req,res)=>{})
+   // .post(
+   //    auth('admin', 'tech'),
+   //    // to add variation to a service
+   //    fileUpload('services', fileValidation.image).single('largeImage'),
+   //    validation(validator.addVariationToService),
+   //    controller.addVariationToService
+   // )
 
 router
    .route('/:serviceId/variations/:variationId')
