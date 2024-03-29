@@ -45,6 +45,7 @@ const authorizedTo = (...roles) =>
       }
       request.decoded = user
       request.user = user
+      request.tokenData = decoded
       console.log('User', user)
       if (roles.includes(request.decoded.role)) {
          next()
