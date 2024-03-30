@@ -100,9 +100,8 @@ router.route('/variations/:variationId/input').patch(
 //    validation(validator.addVariationToService),
 //    controller.addVariationToService
 // )
-
 router
-   .route('/:serviceId/variations/:variationId')
+   .route('/variations/:variationId')
    // .patch(
    //    auth('admin', 'tech'),
    //    // edit variation from a service
@@ -111,10 +110,10 @@ router
    //    controller.editServiceVariation
    // )
    .delete(
-      auth('admin', 'tech'),
+      auth('admin'),
       // edit variation from a service
       validation(validator.deleteServiceVariation),
-      controller.deleteServiceVariation
+      controller.deleteVariation
    )
 router
    .route('/:serviceId/details/:position')
