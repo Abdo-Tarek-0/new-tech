@@ -280,6 +280,22 @@ export const editVariationInput = catchError(async (req, res) => {
       message: 'variation is updated successfully..!',
    })
 })
+
+export const deleteVariation = catchError(async (req, res) => {
+   const variationId = req.params.variationId
+
+   const deletedVariation = await variationsModel.deleteOne({
+      _id: variationId,
+   })
+
+   if (deletedVariation.deletedCount === 0) {
+      throw new ErrorMessage(404, 'No such variation found')
+   }
+
+   res.status(201).json({
+      message: 'variation is deleted successfully..!',
+   })
+})
 // export const addVariationToService = catchError(async (req, res) => {
 //    if (req.file) {
 //       req.body.largeImage = req.file.dest
@@ -386,24 +402,24 @@ export const getServiceVariations = catchError(async (req, res) => {
 //    }
 //    res.status(201).json({ message: 'variation is updated successfully..!' })
 // })
-export const deleteServiceVariation = catchError(async (req, res) => {
-   const { variationId } = req.params
-   const query = {
-      _id: req.params.serviceId,
-      'variations._id': variationId,
-   }
-   const update = {
-      $pull: { variations: { _id: variationId } },
-   }
-   const updatedService = await ServicesModel.updateOne(query, update)
-   if (updatedService.matchedCount === 0) {
-      throw new ErrorMessage(404, "Service or variation ID doesn't exist 🙄")
-   }
+// export const deleteServiceVariation = catchError(async (req, res) => {
+//    const { variationId } = req.params
+//    const query = {
+//       _id: req.params.serviceId,
+//       'variations._id': variationId,
+//    }
+//    const update = {
+//       $pull: { variations: { _id: variationId } },
+//    }
+//    const updatedService = await ServicesModel.updateOne(query, update)
+//    if (updatedService.matchedCount === 0) {
+//       throw new ErrorMessage(404, "Service or variation ID doesn't exist 🙄")
+//    }
 
-   res.status(201).json({
-      message: 'Service variation deleted successfully..!',
-   })
-})
+//    res.status(201).json({
+//       message: 'Service variation deleted successfully..!',
+//    })
+// })
 
 export const addDetailsItem = catchError(async (req, res) => {
    let update = {}
