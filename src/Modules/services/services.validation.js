@@ -153,7 +153,6 @@ export const editServiceVariation = joi
 
 export const deleteServiceVariation = joi
    .object({
-      serviceId: generalFields.id.required(),
       variationId: generalFields.id.required(),
    })
    .required()
