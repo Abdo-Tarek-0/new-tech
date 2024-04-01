@@ -12,6 +12,12 @@ const variationSchema = new mongoose.Schema({
       required: [true, 'name is required'],
       minLength: [2, 'too short  name'],
    },
+   description: {
+      type: String,
+      trim: true,
+      required: [true, 'description is required'],
+      minLength: [2, 'too short  description'],
+   },
    type: {
       type: String,
       enum: ['select-multi', 'select-single', 'input-num'],

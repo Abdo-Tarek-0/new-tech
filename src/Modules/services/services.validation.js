@@ -78,6 +78,7 @@ export const addVariationSelect = joi
       name: joi.string().min(2).required(),
       isMulti: joi.boolean().required(),
       isOptional: joi.boolean().required(),
+      description: joi.string().min(2).required(),
       values: joi.array().items(
          joi.object({
             name: joi.string().min(2).required(),
@@ -92,6 +93,7 @@ export const addVariationInput = joi
       serviceId: generalFields.id.required(),
       name: joi.string().min(2).required(),
       isOptional: joi.boolean().required(),
+      description: joi.string().min(2).required(),
       minValue: joi.number().required(),
       maxValue: joi.number().required().min(joi.ref('minValue')),
       step: joi.number().required().max(joi.ref('maxValue')),
@@ -105,6 +107,7 @@ export const editVariationSelect = joi
       name: joi.string().min(2),
       isMulti: joi.boolean(),
       isOptional: joi.boolean(),
+      description: joi.string().min(2),
       values: joi.array().items(
          joi.object({
             name: joi.string().min(2),
@@ -119,6 +122,7 @@ export const editVariationInput = joi
       variationId: generalFields.id.required(),
       name: joi.string().min(2),
       isOptional: joi.boolean(),
+      description: joi.string().min(2),
       minValue: joi.number(),
       maxValue: joi.number(),
       step: joi.number(),
@@ -138,18 +142,18 @@ export const editVariationInput = joi
 //    })
 //    .required()
 
-export const editServiceVariation = joi
-   .object({
-      serviceId: generalFields.id.required(),
-      variationId: generalFields.id.required(),
-      name: joi.string().min(2),
-      title: joi.string().min(2),
-      topDescription: joi.string().min(5).max(800),
-      file: generalFields.file,
-      price: joi.number().min(0),
-      dropDownnNameId: generalFields.id,
-   })
-   .required()
+// export const editServiceVariation = joi
+//    .object({
+//       serviceId: generalFields.id.required(),
+//       variationId: generalFields.id.required(),
+//       name: joi.string().min(2),
+//       title: joi.string().min(2),
+//       topDescription: joi.string().min(5).max(800),
+//       file: generalFields.file,
+//       price: joi.number().min(0),
+//       dropDownnNameId: generalFields.id,
+//    })
+//    .required()
 
 export const deleteServiceVariation = joi
    .object({
